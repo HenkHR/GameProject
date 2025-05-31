@@ -1,8 +1,11 @@
-import { ImageSource, Sound, Resource, Loader } from 'excalibur'
+import { ImageSource, Sound, Resource, Loader, ImageWrapping } from 'excalibur'
 
 // voeg hier jouw eigen resources toe
 const Resources = {
-    Fish: new ImageSource('images/fish.png')
+    Background: new ImageSource('images/Background.png', { wrapping: ImageWrapping.Repeat }),
+    Player: new ImageSource('images/Spaceship.png'),
+    Bullet: new ImageSource('images/Bullet.png'),
+    EnemyDefault: new ImageSource('images/EnemyDefault.png'),
 }
 
 
