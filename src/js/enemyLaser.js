@@ -1,7 +1,8 @@
 import { Resources } from "./resources";
 import { Actor, Vector } from "excalibur";
 import { Color } from "excalibur";
-import { Player } from "./player.js";
+import { Player } from "./player.js"
+import { UI } from "./ui.js";
 
 
 
@@ -19,12 +20,20 @@ export class EnemyLaser extends Actor {
     }
 
     hitsomething(event) {
+        const ui = this.scene.actors.find(actor => actor instanceof UI);
+
         if (this.hasHit) {
             return;
         }
 
         if (event.other.owner instanceof Player) {
             event.other.owner.health -= 1;
+            ui.playerhealth -= 0.2;
+            ui.reduceHealth();
+            if (event.other.owner.health <= 0) {
+                this.scene.engine.showGameOver();
+                event.other.owner.kill();
+            }
             event.other.owner.graphics.current.tint = Color.Red;
             setTimeout(() => {
                 event.other.owner.graphics.current.tint = Color.White;
