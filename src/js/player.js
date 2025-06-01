@@ -1,6 +1,10 @@
 import { Resources } from "./resources";
 import { Actor, Vector } from "excalibur";
 import { Bullet } from "./bullet";
+import { Meteorite } from "./meteorite";
+import { HealthPack } from "./healthpack";
+import { Enemy } from "./Enemy";
+import { UI } from "./ui";
 
 
 export class Player extends Actor {
@@ -8,12 +12,16 @@ export class Player extends Actor {
     dashTime = 0
     dashDuration = 200
     dashSpeed = 600
+    maxHealth = 5
+    health = 5
 
     constructor() {
         super({ width: Resources.Player.width, height: Resources.Player.height });
         this.graphics.use(Resources.Player.toSprite());
-        this.pos = new Vector(400, 225);
+        this.pos = new Vector(100, 225);
         this.scale = new Vector(0.1, 0.1);
+        this.events.on("collisionstart", (event) => this.hitsomething(event));
+
     }
 
     onPreUpdate(engine, delta) {
@@ -30,33 +38,46 @@ export class Player extends Actor {
             this.pos.x += 3;
         }
 
-        // if (engine.input.keyboard.isHeld('ShiftLeft') && !this.isDashing) {
-        //     this.startDash()
-        // }
 
         if (engine.input.keyboard.wasPressed('Space')) {
             this.shoot();
 
         }
-        // if (this.isDashing) {
-        //     this.dashTime += delta
-        //     // Gradually slow down dash
-        //     const t = this.dashTime / this.dashDuration
-        //     this.vel = new Vector(0, this.dashSpeed * (this.vel.y - t)) //Dash down
-
-        //     if (this.dashTime >= this.dashDuration) {
-        //         this.isDashing = false
-        //         this.vel = Vector.Zero
-        //     }
-        // }
-
     }
 
-    // startDash() {
-    //     this.isDashing = true
-    //     this.dashTime = 0
-    //     this.vel = new Vector(this.dashSpeed, 0)
-    // }
+    hitsomething(event) {
+        const ui = this.scene.actors.find(actor => actor instanceof UI);
+        if (event.other.owner instanceof Meteorite) {
+            this.health -= 2;
+            ui.playerhealth -= 0.2;
+            ui.reduceHealth();
+            if (this.health <= 0) {
+                this.scene.engine.showGameOver();
+                this.kill();
+            }
+            event.other.owner.kill();
+        }
+        if (event.other.owner instanceof HealthPack) {
+            this.health += 1;
+            ui.playerhealth += 0.2;
+            ui.reduceHealth();
+            if (this.health > this.maxHealth) {
+                this.health = this.maxHealth;
+            }
+            event.other.owner.kill();
+        }
+        if (event.other.owner instanceof Enemy) {
+            this.health -= 1;
+            ui.playerhealth -= 0.2;
+            ui.reduceHealth();
+            if (this.health <= 0) {
+                this.scene.engine.showGameOver();
+                this.kill();
+            }
+            event.other.owner.kill();
+        }
+    }
+
 
     shoot() {
         const bullet = new Bullet()
